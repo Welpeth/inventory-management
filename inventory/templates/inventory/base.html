@@ -1,0 +1,27 @@
+<!-- 
+# ===================================================================
+# Projeto: Inventory Management
+# Autor: Henrique José Dias Pereira
+# Data: 06/11/2024
+# Descrição: Breve descrição do que o código faz.
+# Direitos Autorais: © 2024 Henrique José Dias Pereira. Todos os direitos reservados.-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <link rel="icon" href="{% static 'images/logo.png' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel = "stylesheet">
+    <link href="https://bootswatch.com/5/yeti/bootstrap.min.css" rel = "stylesheet">
+    <title>TI: Inventory Management</title>
+</head>
+<body>
+    {% include 'inventory/navigation.html' %}
+    {% block content %}
+    {% endblock content %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+</body>
+</html>

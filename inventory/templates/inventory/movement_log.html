@@ -1,0 +1,73 @@
+<!-- 
+# ===================================================================
+# Projeto: Inventory Management
+# Autor: Henrique José Dias Pereira
+# Data: 06/11/2024
+# Descrição: Breve descrição do que o código faz.
+# Direitos Autorais: © 2024 Henrique José Dias Pereira. Todos os direitos reservados.-->
+
+{% extends 'inventory/base.html' %}
+
+{% block content %}
+<a href="{% url 'dashboard' %}" class="btn btn-outline-primary my-3 mx-4">Voltar</a>
+<div class="col-sm-11 col-md-4 mx-auto mt-5 px-3">
+    <h1 class="col-md-10">Log de Movimentações</h1>
+</div>
+<div class="row">
+    <div class="col-md-10 col-12 mx-auto mt-5">
+        <div class="mb-3">
+            {% if logs %}
+            <div class="mb-3">
+                <a href="{% url 'clear-logs' %}" class="btn btn-outline-danger">Limpar Logs</a>
+                <a href="#" id="print-logs" class="btn btn-outline-secondary">Imprimir Logs</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <table class="table table-hover table-striped">
+            <thead>
+                <tr>
+                    <th>Usuário</th>
+                    <th>Item</th>
+                    <th>Mudança</th>
+                    <th>Tipo de Ação</th>
+                    <th>Observação</th>
+                    <th>Hora e Data</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.user }}</td>
+                    {% if log.item %}
+                    <td>{{ log.item.name }}</td>
+                    {% else %}
+                    <td>Item excluído</td>
+                    {% endif %}
+                    <td>{{ log.change }}</td>
+                    {% if log.item %}
+                    <td>{{ log.get_action_type_display }}</td>
+                    {% else %}
+                    <td>Excluído</td>
+                    {% endif %}
+                    <td>{{ log.observation }}</td>
+                    <td>{{ log.timestamp|date:"H:i, d/m/Y" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">Nenhuma movimentação encontrada.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+<script>
+    document.getElementById('print-logs').addEventListener('click', function() {
+        window.print();
+    });
+</script>
+
+{% endblock content %}

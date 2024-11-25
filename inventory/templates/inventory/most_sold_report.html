@@ -1,0 +1,24 @@
+<!-- 
+# ===================================================================
+# Projeto: Inventory Management
+# Autor: Henrique José Dias Pereira
+# Data: 06/11/2024
+# Direitos Autorais: © 2024 Henrique José Dias Pereira. Todos os direitos reservados.-->
+
+{% extends 'inventory/base.html' %}
+{% block content %}
+<h1>Top 10 Itens com Mais Saídas</h1>
+<table>
+    <tr>
+        <th>Item</th>
+        <th>Quantidade Vendida</th>
+    </tr>
+    {% for entry in report %}
+    <tr>
+        <td>{{ entry.item__name }}</td>
+        <td>{{ entry.total_sold|abs }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock content %}

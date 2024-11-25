@@ -1,0 +1,926 @@
+<!-- 
+# ===================================================================
+# Projeto: Inventory Management
+# Autor: Henrique José Dias Pereira
+# Data: 06/11/2024
+# Descrição: Breve descrição do que o código faz.
+# Direitos Autorais: © 2024 Henrique José Dias Pereira. Todos os direitos reservados.-->
+
+{% extends 'inventory/base.html' %}
+
+{% block content %}
+<head>
+    <style>
+        .btn.btn-outline-primary.border-danger {
+            transition: all 0.3s ease; 
+            color: red;
+        }
+
+        .btn.btn-outline-primary.border-danger:hover {
+            background-color: red; 
+            color: white; 
+        }
+
+        input#user-input {
+            border: none;
+        }
+
+        #user-input {
+            width: 200px;  /* Ajuste a largura conforme desejado */
+            height: 30px;  /* Ajusta a altura */
+            margin-top: 10px;
+            border: none;
+        }
+
+        .form-group input {
+            width: 400px !important; 
+        }
+
+        #chat-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 16px;
+        }
+
+        #chat-toggle {
+            background-color: #007bff;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        #chat-content {
+            display:none;
+            width: 300px;
+            height: 400px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #chat-messages {
+            height: 350px;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: #fafafa;
+        }
+
+        #user-input:focus {
+            outline: none;
+            border: none;
+        }
+
+        #chat-input {
+            display: flex;
+            border-top: 1px solid #efefef;
+        }
+
+        #chat-input button {
+            background-color: #007bff;
+            color: white;
+            padding: 0 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 20px;
+            display: inline-block;
+            max-width: 80%;
+        }
+
+        .message.bot {
+            background-color: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+        }
+
+        .message.user {
+            background-color: #efefef;
+            text-align: right;
+            margin-left: auto;
+            color: black;
+        }
+
+        .message.bot img {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .message-content-bot {
+            color: white;
+        }
+
+        .typing-indicator {
+            display: flex;
+            margin-left: 10px;
+        }
+
+        #user-input {
+            width: 300px;
+            margin-top: 10px;
+            border: none;
+        }
+
+        .fa-trash {
+            color: #3d3737; /* Cinza para o ícone */
+        }
+
+        .fa-gear {
+            color: #0e598c; /* Azul para o ícone */
+        }
+
+        .fa-plus {
+            color: #168008; /* Verde para o ícone */
+        }
+
+        .fa-minus {
+            color: #b90606; /* Vermelho para o ícone */
+        } 
+
+        table.table {
+            width: 100%;
+            font-size: 14px; /* Ajuste conforme necessário */
+        }
+
+        /* Contêiner de paginação */
+        .pagination {
+            margin-top: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+        
+        .pagination ul {
+            display: flex;
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .pagination li {
+            margin: 0 5px;
+        }
+        
+        table-columns {
+            margin-left: 10px;
+
+        }
+
+
+        /* Botões de paginação */
+        .pagination a, .pagination span {
+            display: inline-block;
+            padding: 10px 15px;
+            color: #0e598c; /* Cor azul do texto */
+            background-color: transparent; /* Fundo transparente */
+            border: 1px solid #0e598c; /* Borda azul */
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        /* Efeito de hover */
+        .pagination a:hover, .pagination span:hover {
+            background-color: #007bff; /* Fundo azul ao passar o mouse */
+            color: #fff; /* Texto branco */
+            cursor: pointer;
+        }
+        
+        /* Botão ativo (a página atual) */
+        .pagination .active a {
+            background-color: #0e598c; /* Fundo azul para o item ativo */
+            color: #fff; /* Texto branco para o ativo */
+            border-color: #0e598c; /* Borda azul para o ativo */
+        }
+        
+        /* Desabilitar botões de próxima/anterior quando não há mais páginas */
+        .pagination .disabled a, .pagination .disabled span {
+            color: #6c757d; /* Cor cinza para botões desabilitados */
+            border-color: #e0e0e0; /* Borda cinza para botões desabilitados */
+            pointer-events: none;
+            cursor: not-allowed;
+        }
+        
+        /* Botões de próxima e anterior */
+        .pagination .prev, .pagination .next {
+            font-weight: bold;
+        }
+        
+        .low-stock {
+            background-color: #f8d7da;  /* Fundo vermelho claro */
+            color: #721c24;  /* Texto vermelho escuro */
+        }
+
+        .pagination-second {
+            margin-top: 20px; /* Distância superior em relação aos elementos anteriores */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+        
+        .pagination-second ul {
+            display: flex;
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .pagination-second li {
+            margin: 0 5px;
+        }
+        
+        /* Botões de paginação secundária */
+        .pagination-second a, .pagination-second span {
+            display: inline-block;
+            padding: 10px 15px;
+            color: #0e598c; /* Cor azul do texto */
+            background-color: transparent; /* Fundo transparente */
+            border: 1px solid #0e598c; /* Borda azul */
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        /* Efeito de hover */
+        .pagination-second a:hover, .pagination-second span:hover {
+            background-color: #007bff; /* Fundo azul ao passar o mouse */
+            color: #fff; /* Texto branco */
+            cursor: pointer;
+        }
+        
+        /* Botão ativo (a página atual) */
+        .pagination-second .active a {
+            background-color: #0e598c; /* Fundo azul para o item ativo */
+            color: #fff; /* Texto branco para o ativo */
+            border-color: #0e598c; /* Borda azul para o ativo */
+        }
+        
+        /* Desabilitar botões de próxima/anterior quando não há mais páginas */
+        .pagination-second .disabled a, .pagination-second .disabled span {
+            color: #6c757d; /* Cor cinza para botões desabilitados */
+            border-color: #e0e0e0; /* Borda cinza para botões desabilitados */
+            pointer-events: none;
+            cursor: not-allowed;
+        }
+        
+        .pagination-second .prev, .pagination-second .next {
+            font-weight: bold;
+        }
+        
+        .desktop-actions {
+            display: block; /* Exibe os botões em telas grandes */
+            margin-left: 20px;
+        }
+        
+        .mobile-actions {
+            display: none; /* Esconde os 3 pontinhos em telas grandes */
+        }
+        
+               
+        .desktop-actions .btn-decrease {
+            background-color: none; /* Fundo branco */
+            color: #0e598c; /* Texto e ícone cinza */
+            border: 1px solid #0e598c; /* Contorno cinza claro */
+        }
+
+        .desktop-actions .btn-decrease i {
+            color: #0e598c; /* Ícone cinza */
+        }
+
+        /* 2. Botão Remover */
+        .desktop-actions .btn-remove {
+            background-color: none; /* Fundo branco */
+            color: #757575 !important; /* Texto e ícone cinza */
+            border: 1px solid #757575; /* Contorno cinza claro */
+        }
+
+        .desktop-actions .btn-remove i {
+            color: #757575; /* Ícone cinza */
+        }
+
+        /* 3. Botão Aumentar */
+        .desktop-actions .btn-increase {
+            background-color: #0e598c; /* Fundo cinza claro */
+            color: #ffffff; /* Texto e ícone brancos */
+            border: 1px solid #e0e0e0; /* Contorno cinza claro */
+        }
+
+        .desktop-actions .btn-increase i {
+            color: #ffffff; /* Ícone branco */
+        }
+
+        /* 4. Botão Editar */
+        .desktop-actions .btn-edit {
+            background-color: #0e598c; /* Fundo cinza claro */
+            color: #ffffff; /* Texto e ícone brancos */
+            border: 1px solid #0e598c; /* Contorno cinza claro */
+        }
+
+        .desktop-actions .btn-edit i {
+            color: #ffffff; /* Ícone branco */
+        }
+
+        thead {
+            background-color: #f1f1f1 !important; /* Fundo cinza claro */
+        }
+        
+        
+        
+        /* Adicionando um hover ou efeito ao passar o mouse (opcional) */
+        th:hover {
+            background-color: #e0e0e0; /* Cor um pouco mais escura ao passar o mouse */
+        }
+
+
+        
+        /* Estilizando as células do corpo da tabela (se necessário) */
+        td {
+            padding: 10px;
+             /* Borda em volta das células */
+        }
+
+        .btn-disabled {
+            background-color: #d3d3d3; /* Cor de fundo cinza claro */
+            border-color: #ccc; /* Borda cinza claro */
+            color: #999; /* Cor do texto mais apagada */
+            pointer-events: none; /* Impede que o botão seja clicado */
+        }
+        
+        /* Se o botão estiver desabilitado através do atributo 'disabled' */
+        a[disabled] {
+            background-color: #d3d3d3 !important; /* Garantir que o fundo fique cinza */
+            border-color: #ccc !important; /* Garantir que a borda fique cinza */
+            color: #999 !important; /* Garantir que o texto fique cinza */
+            pointer-events: none !important; /* Impede a interação */
+        }
+
+        .tooltip {
+            display: none; /* Começa invisível */
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.75);
+            color: #fff;
+            padding: 5px;
+            border-radius: 3px;
+            font-size: 12px;
+            z-index: 9999; /* Garante que o tooltip fique acima de outros elementos */
+          }
+          
+          #warning-icon {
+            position: relative; /* Torna o ícone "posicionado" para aplicar z-index */
+            z-index: 10; /* Pode ser qualquer valor menor que o z-index do tooltip */
+          }
+          
+
+          .btn-adicionar {
+            background-color: #0e598c; /* Fundo azul */
+            color: #ffffff; /* Texto e ícone brancos */
+            border: 1px solid #0e598c; /* Contorno azul */
+            transition: all 0.3s ease;
+        }
+
+        .btn-adicionar i {
+            color: #ffffff; /* Ícone branco */
+        }
+
+        .btn-ver-logs i {
+            color: #0e598c; /* Ícone azul */
+        }
+
+        .btn-ver-logs {
+            background-color: #ffffff; /* Fundo branco */
+            color: #0e598c; /* Texto azul */
+            border: 1px solid #0e598c; /* Contorno azul */
+            transition: all 0.3s ease;
+        }
+
+        .btn-imprimir i {
+            color: #0e598c; /* Ícone azul */
+        }
+
+        .btn-imprimir {
+            background-color: #ffffff; /* Fundo branco */
+            color: #0e598c; /* Texto azul */
+            border: 1px solid #0e598c; /* Contorno azul */
+            transition: all 0.3s ease;
+        }
+
+        .btn-adicionar:hover {
+            background-color: #09688c; /* Fundo azul mais escuro */
+            color: #ffffff; /* Texto branco */
+            border: 1px solid #0e598c; /* Contorno azul */
+        }
+
+        .btn-adicionar:hover i {
+            color: #ffffff; /* Ícone branco */
+        }
+
+        .btn-ver-logs:hover i {
+            color: #ffffff; /* Ícone branco ao passar o mouse */
+        }
+
+        .btn-ver-logs:hover {
+            background-color: #0e598c; /* Fundo azul */
+            color: #ffffff; /* Texto branco */
+            border: 1px solid #0e598c; /* Contorno azul */
+        }
+
+        .btn-imprimir:hover {
+            background-color: #0e598c; /* Fundo azul */
+            color: #ffffff; /* Texto branco */
+            border: 1px solid #0e598c; /* Contorno azul */
+        }
+
+        .btn-imprimir:hover i {
+            color: #ffffff; /* Ícone branco ao passar o mouse */
+        }
+
+        .btn-adicionar span, .btn-imprimir span, .btn-ver-logs span{
+            margin-top: 3px;
+            font-size: 18px;
+        }
+
+
+        @media (max-width: 767px) {
+            .row {
+                width: 100%;  /* Para telas pequenas, ocupa 100% da largura */
+                margin-left: 0; /* Remove a margem esquerda específica */
+                margin-right: 0; /* Remove a margem direita */
+            }
+
+            .filter-form input{
+                width: 200px !important;
+            }
+        
+            table.table {
+                font-size: 12px; /* Menor tamanho da fonte para telas menores */
+            }
+        
+            #user-input {
+                width: 150px;  /* Ajuste para a largura do campo de input em telas menores */
+                height: 30px;
+            }
+        
+            table.table th, table.table td {
+                padding: 5px; /* Menor padding para economizar espaço */
+            }
+        
+            .form-group input {
+                width: 100%;
+            }
+        
+            .filter-form {
+                margin-top: 5px;
+                margin-bottom: 10px;
+                display: flex;
+                justify-content: flex-start; /* Garantir que o formulário fique alinhado à esquerda */
+            }
+        
+            .filter-form button {
+                height: 38px; /* Ajusta a altura do botão */
+            }
+            .pagination a, .pagination span {
+                padding: 8px 12px;
+                font-size: 15px; /* Aumenta o tamanho da fonte para os ícones */
+            }
+        
+            .pagination .prev a,
+            .pagination .next a {
+                font-size: 15x; /* Aumenta o tamanho da seta */
+            }
+        
+            .pagination .current {
+                display: none; /* Esconde o texto com a página atual */
+            }
+        
+            .pagination .prev a,
+            .pagination .next a {
+                text-align: center; /* Alinha as setas centralizadas */
+            }
+        
+            /* Adicionando margens para a paginação se mover para baixo */
+            .pagination {
+                margin-top: 150px; /* Ajuste conforme necessário para mover a paginação abaixo do filtro */
+                margin-bottom: 30px;
+                margin-left: -100px;
+            }
+
+            .pagination-second a, .pagination-second span {
+                padding: 8px 12px;
+                font-size: 15px; /* Ajuste para tamanhos menores */
+            }
+        
+            .pagination-second .prev a,
+            .pagination-second .next a {
+                font-size: 15px; /* Ajuste para as setas */
+            }
+
+            .row #greetings {
+                margin-bottom: -100px;
+            }
+
+            .desktop-actions {
+                display: none; /* Esconde os botões em telas pequenas */
+            }
+        
+            .mobile-actions {
+                display: block; /* Exibe o ícone de 3 pontinhos em telas pequenas */
+            }
+        
+            .dropdown-menu {
+                width: 200px; /* Ajusta a largura do menu dropdown */
+            }
+
+        }
+        
+        @media (max-width: 576px) {
+            .pagination a, .pagination span {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+        }
+        
+
+        .form-group input{
+            width: 200px;
+        }
+        
+        .filter-form button {
+            height: 38px;
+        }
+
+        .filter-form {
+            margin-top: 5px;
+            display: flex;
+            justify-content: left;
+        }
+
+
+        .row {
+            max-width: 1400px;
+            margin: 0 auto;    /* Centraliza o conteúdo */
+        }
+
+        /* Estilo para itens com baixo estoque */
+        .low-stock td {
+            background-color: #f8d7da !important;  /* Fundo vermelho claro */
+            color: #721c24 !important;  /* Texto vermelho escuro */
+        }
+        
+        .low-stock th {
+            background-color: #f8d7da !important;  /* Fundo vermelho claro */
+            color: #721c24 !important;  /* Texto vermelho escuro *
+        }
+
+        .low-stock .text-danger {
+            color: #b90606 !important;  /* Cor vermelha para as quantidades de baixo estoque */
+        }
+        
+
+    </style>
+</head>
+
+
+<div id="chat-box">
+    <button id="chat-toggle"><i class="fa fa-comment" aria-hidden="true"></i></button>
+    <div id="chat-content">
+        <div id="chat-messages">
+            <div class="message bot">
+                {% load static %}
+                <img src="{% static 'images/helix-pic.png' %}" alt="Bot Image">
+                <div class="message-content-bot">Olá, eu sou Helix, seu assistente virtual.</div>
+                <div class="typing-indicator"></div>
+            </div>
+        </div>
+        <div id="chat-input">
+            <input type="text" id="user-input" placeholder="Digite sua mensagem...">
+            <button id="send-button">Enviar</button>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+    <div class="row mt-3">
+        {% for message in messages %}
+            {% if message.tags == 'error' %}
+                <div class="col-md-10 col-12 mx-auto alert alert-danger">
+                    {{ message }}
+                </div>
+            {% else %}
+                <div class="col-md-10 col-12 mx-auto alert alert-success">
+                    {{ message }}
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endif %}
+
+<div class="row">
+    <div id="greetings" class="col-md-10 col-12 mx-auto mt-5">
+        <h1>Hello {{ user }}!</h1>
+    </div>
+    <div id="filter-container" class="d-flex justify-content-between align-items-center mt-5">
+        <div id="filter-container" class="d-flex justify-content-between align-items-center">
+            <form class="filter-form d-flex" method="get" action="{% url 'dashboard' %}">
+                <!-- Filtro único (nome ou categoria) -->
+                <div class="form-group mr-3">
+                    <input 
+                        type="text" 
+                        name="filter" 
+                        class="form-control" 
+                        placeholder=" "
+                        value="{{ filter_value }}"> <!-- Preenche com o valor da query -->
+                </div>
+        
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+            </form>
+
+        </div>
+        <div class="pagination">
+            <ul class="pagination-list">
+                {% if items.has_previous %}
+                    <li class="prev">
+                        <a href="?page=1">&laquo;</a> <!-- Ícone de seta para a primeira página -->
+                    </li>
+                    <li class="prev">
+                        <a href="?page={{ items.previous_page_number }}">&#10094;</a> <!-- Ícone de seta para a página anterior -->
+                    </li>
+                {% endif %}
+            
+                <li class="current">
+                    <span>Página {{ items.number }} de {{ items.paginator.num_pages }}.</span>
+                </li>
+            
+                {% if items.has_next %}
+                    <li class="next">
+                        <a href="?page={{ items.next_page_number }}">&#10095;</a> <!-- Ícone de seta para a próxima página -->
+                    </li>
+                    <li class="next">
+                        <a href="?page={{ items.paginator.num_pages }}">&raquo;</a> <!-- Ícone de seta para a última página -->
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    
+        <div id="action-buttons" class="d-flex">
+            <button id="printItems" class="btn btn-imprimir d-flex">
+                <i class="fa-solid fa-print fa-2x custom-icon-filter"></i>
+                <span class="ms-2 d-none d-sm-block">Imprimir</span>
+            </button>
+            <a href="{% url 'movement_log' %}" class="btn btn-ver-logs d-flex">
+                <i class="fa-solid fa-paste fa-2x custom-icon-logs"></i>
+                <span class="ms-2 d-none d-sm-block">Ver logs</span>
+            </a>
+            <a href="{% url 'add-item' %}" class="btn btn-adicionar d-flex">
+                <i class="fa-solid fa-square-plus fa-2x"></i>
+                <span class="ms-2 d-none d-sm-block">Adicionar Item</span>
+            </a>
+        </div>
+    </div>
+        <!-- Tabela de Itens -->
+        <table id="table-header" class="table table-hover table-striped mt-4">
+            <thead>
+                <tr class="table-columns">
+                    <th scope="col">Status</th>
+                    <th scope="col">ID</th>
+                    <th scope="col">Nome</th>
+                    <th scope="col">Quantidade</th>
+                    <th scope="col">Categoria</th>
+                    <th scope="col">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if items|length == 0 %}
+                    <tr>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                {% else %}
+                    {% for item in items %}
+                    <tr class="{% if item.quantity <= 3 %}low-stock{% endif %}">
+                        <td class="warning-icon">
+                            {% if item.quantity <= 3 %}
+                            <!-- Substituindo id por uma classe ou identificador único -->
+                            <i class="fas fa-exclamation-circle warning-icon-item-{{ item.id }}" style="font-size: 18px; color: red;" title="Baixo estoque"></i>
+                            {% endif %}
+                        </td>
+                        <th class="{% if item.quantity <= 3 %}low-stock{% endif %}" scope="row">
+                            {{ forloop.counter|add:items.start_index|add:-1 }}
+                        </th>
+                        <td>{{ item.name }}</td>
+                        <td class="{% if item.quantity <= 3 %}text-danger{% endif %}">{{ item.quantity }}</td>
+                        <td>{{ item.category.name }}</td>
+                        <td>
+                            <!-- Ações visíveis em desktop e escondidas em dispositivos móveis -->
+                            <div class="desktop-actions">
+                                <a href="{% url 'increase-item' item.id %}" class="btn btn-increase"><i class="fa-solid fa-plus"></i> Aumentar</a>
+        
+                                <!-- Verificação para desabilitar o botão "Diminuir" se a quantidade for 0 -->
+                                <a href="{% if item.quantity > 0 %}{% url 'decrease-item' item.id %}{% else %}# {% endif %}"
+                                   class="btn btn-decrease {% if item.quantity == 0 %}btn-disabled{% endif %}"
+                                   {% if item.quantity == 0 %}disabled{% endif %}>
+                                    <i class="fa-solid fa-minus"></i> Diminuir
+                                </a>
+        
+                                <a href="{% url 'edit-item' item.id %}" class="btn btn-edit"><i class="fa-solid fa-gear"></i> Editar</a>
+                                <a href="{% url 'delete-item' item.id %}" class="btn btn-remove text-danger"><i class="fa-solid fa-trash"></i> Remover</a>
+                            </div>
+        
+                            <!-- Menu dropdown (3 pontinhos) visível apenas em telas pequenas -->
+                            <div class="dropdown mobile-actions">
+                                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fa-solid fa-ellipsis-h"></i> <!-- Ícone 3 pontinhos -->
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <li><a class="dropdown-item" href="{% if item.quantity > 0 %}{% url 'decrease-item' item.id %}{% else %}# {% endif %}"><i class="fa-solid fa-minus"></i> Diminuir</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'increase-item' item.id %}"><i class="fa-solid fa-plus"></i> Aumentar</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'edit-item' item.id %}"><i class="fa-solid fa-gear"></i> Editar</a></li>
+                                    <li><a class="dropdown-item text-danger" href="{% url 'delete-item' item.id %}"><i class="fa-solid fa-trash"></i> Remover</a></li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+        <div class="pagination-second">
+            <ul class="pagination-list">
+                {% if items.has_previous %}
+                    <li class="prev">
+                        <a href="?page=1">&laquo;</a> <!-- Ícone de seta para a primeira página -->
+                    </li>
+                    <li class="prev">
+                        <a href="?page={{ items.previous_page_number }}">&#10094;</a> <!-- Ícone de seta para a página anterior -->
+                    </li>
+                {% endif %}
+            
+                <li class="current">
+                    <span>Página {{ items.number }} de {{ items.paginator.num_pages }}.</span>
+                </li>
+            
+                {% if items.has_next %}
+                    <li class="next">
+                        <a href="?page={{ items.next_page_number }}">&#10095;</a> <!-- Ícone de seta para a próxima página -->
+                    </li>
+                    <li class="next">
+                        <a href="?page={{ items.paginator.num_pages }}">&raquo;</a> <!-- Ícone de seta para a última página -->
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+    </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    document.getElementById('printItems').addEventListener('click', function() {
+        window.print();
+    });
+
+    document.body.addEventListener('mouseover', (event) => {
+        if (event.target && event.target.id === 'warning-icon') {
+            const tooltip = document.createElement('div');
+            tooltip.classList.add('tooltip');
+            tooltip.textContent = 'Baixo estoque';  // Texto do tooltip
+    
+            // Adiciona o tooltip ao body
+            document.body.appendChild(tooltip);
+    
+            const iconRect = event.target.getBoundingClientRect();
+            tooltip.style.display = 'block';
+            tooltip.style.left = `${iconRect.left + window.scrollX + iconRect.width + 10}px`;
+            tooltip.style.top = `${iconRect.top + window.scrollY}px`;
+    
+            // Esconde o tooltip quando o mouse sai do ícone
+            event.target.addEventListener('mouseout', () => {
+                tooltip.style.display = 'none';
+            });
+        };
+    });
+
+    $(document).ready(function() {
+        // Alterna o conteúdo do chat
+        $('#chat-toggle').click(function() {
+            $('#chat-content').slideToggle('fast');
+        });
+
+        // Envia a mensagem ao clicar no botão
+        $('#send-button').click(function() {
+            sendMessage();
+        });
+
+        // Envia a mensagem ao pressionar Enter
+        $('#user-input').keypress(function(e) {
+            if (e.which == 13) {
+                e.preventDefault(); // Evita que o Enter cause um submit do form
+                sendMessage();
+            }
+        });
+
+        // Função para enviar a mensagem
+        function sendMessage() {
+            var message = $('#user-input').val();
+            if (message.trim() !== '') {
+                // Adiciona a mensagem do usuário ao chat
+                const userMessageDiv = createMessage(message, false); 
+                $('#chat-messages').append(userMessageDiv);
+                $('#user-input').val('');
+
+                // Faz o scroll para o final do chat
+                $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+
+                // Envia a mensagem para o backend
+                $.ajax({
+                    url: '/handle_message/',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ message: message }),
+                    success: function(data) {
+                        // Cria a mensagem do bot com indicador de digitação
+                        const botMessageDiv = createMessage('', true, true); 
+                        $('#chat-messages').append(botMessageDiv);
+                        $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+
+                        // Atualiza o conteúdo da mensagem do bot
+                        updateMessageContent(botMessageDiv, data.response);
+
+                        // Remove o indicador de digitação após a animação
+                        $(botMessageDiv).find('.typing-indicator').remove();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Erro ao enviar mensagem:', error);
+                    }
+                });
+            }
+        }
+
+        // Função para criar a estrutura de uma mensagem
+        function createMessage(content, isBot = true, typing = false) {
+            const messageDiv = $('<div class="message"></div>');
+            if (isBot) {
+                messageDiv.addClass('bot');
+                const img = $('<img>').attr({
+                    src: "{% static 'images/helix-pic.png' %}",
+                    width: '40',
+                    height: '40'
+                });
+                messageDiv.append(img);
+            } else {
+                messageDiv.addClass('user');
+            }
+            const messageContentDiv = $('<div class="message-content"></div>').text(content);
+            messageDiv.append(messageContentDiv);
+
+            if (isBot && typing) {
+                const typingIndicatorDiv = $('<div class="typing-indicator"></div>');
+                typingIndicatorDiv.css('display', 'flex'); 
+                for (let i = 0; i < 3; i++) {
+                    const dotDiv = $('<div class="dot"></div>');
+                    typingIndicatorDiv.append(dotDiv);
+                }
+                messageDiv.append(typingIndicatorDiv);
+            }
+
+            return messageDiv;
+        }
+
+        // Função para atualizar o conteúdo de uma mensagem existente
+        function updateMessageContent(messageDiv, content) {
+            $(messageDiv).find('.message-content').text(content);
+        }
+
+        // Função para escapar HTML (segurança)
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;')
+                .replace(/\n/g, '<br>'); 
+        }
+    });
+</script>
+{% endblock content %}
